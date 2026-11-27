@@ -33,8 +33,16 @@
         "sap.m": {},
         "sap.ui.core": {},
         "sap.ui.layout": {},
-        "sap.f": {}
+        "sap.f": {},
+        "sap.tnt": {}
       }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
     },
     "rootView": {
       "viewName": "sap.mm.inventory.ui.view.App",

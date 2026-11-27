@@ -58,12 +58,40 @@ sap.ui.define([
       }
     },
 
+    onToggleSideNav: function () {
+      const oToolPage = this.byId("toolPage");
+      oToolPage.setSideExpanded(!oToolPage.getSideExpanded());
+    },
+
+    onSideNavSelect: function (oEvent) {
+      const sKey = oEvent.getParameter("item").getKey();
+      this._navigateTo(sKey);
+    },
+
+    _navigateTo: function (sKey) {
+      const mPages = {
+        dashboard: "pageDashboard",
+        materials: "pageMaterials",
+        orders: "pageOrders"
+      };
+      const sPageId = mPages[sKey] || "pageDashboard";
+      this.byId("pageContainer").to(this.byId(sPageId));
+      this.byId("sideNavigation").setSelectedKey(sKey);
+      if (sKey === "dashboard") {
+        this._loadDashboardStats();
+      }
+    },
+
+    onGoToDashboard: function () {
+      this._navigateTo("dashboard");
+    },
+
     onGoToMaterials: function () {
-      this.byId("mainTabBar").setSelectedKey("materials");
+      this._navigateTo("materials");
     },
 
     onGoToOrders: function () {
-      this.byId("mainTabBar").setSelectedKey("orders");
+      this._navigateTo("orders");
     },
 
     onSearchMaterials: function (oEvent) {
