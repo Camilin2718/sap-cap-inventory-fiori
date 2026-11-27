@@ -1,0 +1,5 @@
+ID,code,name,email,phone,city,country,rating
+11111111-1111-1111-1111-111111111101,SUP-001,TechSupply Global S.A.,ventas@techsupply.com,+57 300 111 2233,Bogotá,Colombia,4.8
+11111111-1111-1111-1111-111111111102,SUP-002,Industrias Andinas Ltda.,contacto@andinas.co,+57 310 444 5566,Medellín,Colombia,4.6
+11111111-1111-1111-1111-111111111103,SUP-003,LogiParts América,pedidos@logiparts.com,+1 305 777 8899,Miami,Estados Unidos,4.9
+11111111-1111-1111-1111-111111111104,SUP-004,Equipos & Redes del Sur,soporte@equiposur.cl,+56 2 2345 6789,Santiago,Chile,4.4

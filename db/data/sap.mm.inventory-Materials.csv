@@ -1,0 +1,9 @@
+ID,sku,name,description,category,unitOfMeasure,unitPrice,currencyCode,stockQty,minStock,location,supplier_ID
+22222222-2222-2222-2222-222222222201,MAT-1001,Servidor Rack 2U Xeon,Servidor empresarial 64GB RAM 2TB NVMe,Hardware TI,UND,3250.00,USD,4,5,Bodega Central,11111111-1111-1111-1111-111111111101
+22222222-2222-2222-2222-222222222202,MAT-1002,Switch Gigabit 24 Puertos PoE+,Switch administrable capa 3 para rack,Redes,UND,480.00,USD,18,8,Bodega Central,11111111-1111-1111-1111-111111111104
+22222222-2222-2222-2222-222222222203,MAT-1003,Lector Código de Barras Láser,Escáner inalámbrico USB para almacén,Periféricos,UND,135.00,USD,3,10,Bodega Norte,11111111-1111-1111-1111-111111111103
+22222222-2222-2222-2222-222222222204,MAT-1004,Etiquetas Térmicas 10x15cm,Rollo por 1000 etiquetas adhesivas,Consumibles,ROL,24.50,USD,65,20,Bodega Central,11111111-1111-1111-1111-111111111102
+22222222-2222-2222-2222-222222222205,MAT-1005,UPS Online 3000VA,Sistema de respaldo eléctrico doble conversión,Energía,UND,890.00,USD,0,4,Bodega Sur,11111111-1111-1111-1111-111111111101
+22222222-2222-2222-2222-222222222206,MAT-1006,Terminal Móvil PDA Android,Colector de datos industrial IP65,Periféricos,UND,620.00,USD,12,6,Bodega Norte,11111111-1111-1111-1111-111111111103
+22222222-2222-2222-2222-222222222207,MAT-1007,Cable UTP Cat6A Bobina 305m,Cable certificado cobre 10Gbps,Redes,CAJ,195.00,USD,9,10,Bodega Central,11111111-1111-1111-1111-111111111104
+22222222-2222-2222-2222-222222222208,MAT-1008,Estantería Metálica Carga Pesada,Módulo 200x100x50cm 5 niveles,Almacén,UND,210.00,USD,15,5,Bodega Sur,11111111-1111-1111-1111-111111111102

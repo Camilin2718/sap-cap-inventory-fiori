@@ -1,0 +1,319 @@
+<mvc:View
+  controllerName="sap.mm.inventory.ui.controller.App"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  displayBlock="true"
+>
+  <App id="app">
+    <Page id="mainPage" title="Portal de Compras e Inventario (SAP MM / Fiori)" class="sapUiResponsivePadding--header">
+      <headerContent>
+        <Button icon="sap-icon://refresh" text="Actualizar" press=".onRefreshAll" type="Transparent" />
+      </headerContent>
+      <content>
+        <IconTabBar id="mainTabBar" expanded="true" class="sapUiResponsiveContentPadding" select=".onTabSelect">
+          <items>
+            <!-- TAB 1: DASHBOARD -->
+            <IconTabFilter id="tabDashboard" text="Dashboard" icon="sap-icon://bbyd-dashboard" key="dashboard">
+              <VBox class="sapUiSmallMargin">
+                <Title text="Resumen Ejecutivo de Inventario y Compras" level="H3" class="sapUiSmallMarginBottom" />
+                <HBox wrap="Wrap" class="sapUiMediumMarginBottom">
+                  <GenericTile
+                    header="Total Materiales"
+                    subheader="Catálogo activo (MM)"
+                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                    press=".onGoToMaterials"
+                  >
+                    <TileContent>
+                      <NumericContent value="{ui>/stats/totalMaterials}" icon="sap-icon://product" valueColor="Neutral" />
+                    </TileContent>
+                  </GenericTile>
+
+                  <GenericTile
+                    header="Stock Crítico / Agotado"
+                    subheader="Requieren reposición"
+                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                    press=".onGoToMaterials"
+                  >
+                    <TileContent>
+                      <NumericContent
+                        value="{= ${ui>/stats/lowStockCount} + ${ui>/stats/outOfStockCount} }"
+                        icon="sap-icon://alert"
+                        valueColor="{= (${ui>/stats/lowStockCount} + ${ui>/stats/outOfStockCount}) > 0 ? 'Critical' : 'Good' }"
+                      />
+                    </TileContent>
+                  </GenericTile>
+
+                  <GenericTile
+                    header="Órdenes en Proceso"
+                    subheader="Pendientes y aprobadas"
+                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                    press=".onGoToOrders"
+                  >
+                    <TileContent>
+                      <NumericContent
+                        value="{= ${ui>/stats/pendingOrdersCount} + ${ui>/stats/approvedOrdersCount} }"
+                        icon="sap-icon://cart-approval"
+                        valueColor="Neutral"
+                      />
+                    </TileContent>
+                  </GenericTile>
+
+                  <GenericTile
+                    header="Valor Total Inventario"
+                    subheader="Valorización actual"
+                    class="sapUiTinyMarginEnd sapUiTinyMarginBottom"
+                  >
+                    <TileContent unit="USD">
+                      <NumericContent
+                        value="{ui>/stats/totalInventoryValue}"
+                        truncateValueTo="10"
+                        scale="USD"
+                        icon="sap-icon://money-bills"
+                        valueColor="Good"
+                      />
+                    </TileContent>
+                  </GenericTile>
+                </HBox>
+
+                <Table
+                  id="dashboardMaterialsTable"
+                  headerText="Prioridad de Reposición (Menor Stock Primero)"
+                  growing="true"
+                  growingThreshold="6"
+                  items="{
+                    path: '/Materials',
+                    parameters: {
+                      $expand: 'supplier',
+                      $orderby: 'stockQty asc'
+                    }
+                  }"
+                  noDataText="No hay materiales registrados."
+                >
+                  <columns>
+                    <Column><Text text="Material" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Categoría" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Proveedor" /></Column>
+                    <Column hAlign="End"><Text text="Stock / Mín." /></Column>
+                    <Column hAlign="Center"><Text text="Estado" /></Column>
+                  </columns>
+                  <items>
+                    <ColumnListItem>
+                      <cells>
+                        <ObjectIdentifier title="{name}" text="{sku} · {location}" />
+                        <Text text="{category}" />
+                        <Text text="{supplier/name}" />
+                        <ObjectNumber number="{stockQty}" unit="{unitOfMeasure} (Mín: {minStock})" />
+                        <ObjectStatus
+                          text="{parts: ['stockQty', 'minStock'], formatter: '.formatStockText'}"
+                          state="{parts: ['stockQty', 'minStock'], formatter: '.formatStockState'}"
+                        />
+                      </cells>
+                    </ColumnListItem>
+                  </items>
+                </Table>
+              </VBox>
+            </IconTabFilter>
+
+            <!-- TAB 2: MATERIALES -->
+            <IconTabFilter id="tabMaterials" text="Materiales (MM)" icon="sap-icon://product" key="materials">
+              <Table
+                id="materialsTable"
+                items="{
+                  path: '/Materials',
+                  parameters: {
+                    $expand: 'supplier',
+                    $orderby: 'sku asc'
+                  }
+                }"
+                growing="true"
+                growingThreshold="20"
+                noDataText="No se encontraron materiales."
+              >
+                <headerToolbar>
+                  <OverflowToolbar>
+                    <Title text="Catálogo de Materiales" level="H3" />
+                    <ToolbarSpacer />
+                    <SearchField
+                      id="materialSearchField"
+                      width="16rem"
+                      placeholder="Buscar por nombre o SKU..."
+                      search=".onSearchMaterials"
+                    />
+                    <Button text="Nuevo Material" icon="sap-icon://add" type="Emphasized" press=".onOpenNewMaterialDialog" />
+                  </OverflowToolbar>
+                </headerToolbar>
+                <columns>
+                  <Column><Text text="SKU / Material" /></Column>
+                  <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Categoría" /></Column>
+                  <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Proveedor" /></Column>
+                  <Column hAlign="End"><Text text="Precio Unit." /></Column>
+                  <Column hAlign="End"><Text text="Stock" /></Column>
+                  <Column hAlign="Center"><Text text="Estado" /></Column>
+                  <Column hAlign="Center"><Text text="Acciones" /></Column>
+                </columns>
+                <items>
+                  <ColumnListItem>
+                    <cells>
+                      <ObjectIdentifier title="{name}" text="{sku} · {location}" />
+                      <Text text="{category}" />
+                      <Text text="{supplier/name}" />
+                      <ObjectNumber number="{unitPrice}" unit="{currencyCode}" />
+                      <ObjectNumber number="{stockQty}" unit="{unitOfMeasure}" />
+                      <ObjectStatus
+                        text="{parts: ['stockQty', 'minStock'], formatter: '.formatStockText'}"
+                        state="{parts: ['stockQty', 'minStock'], formatter: '.formatStockState'}"
+                      />
+                      <Button text="Ajustar Stock" icon="sap-icon://inventory" press=".onOpenAdjustStockDialog" />
+                    </cells>
+                  </ColumnListItem>
+                </items>
+              </Table>
+            </IconTabFilter>
+
+            <!-- TAB 3: ÓRDENES DE COMPRA -->
+            <IconTabFilter id="tabOrders" text="Órdenes de Compra (PO)" icon="sap-icon://sales-order" key="orders">
+              <VBox class="sapUiSmallMargin">
+                <Table
+                  id="ordersTable"
+                  mode="SingleSelectMaster"
+                  selectionChange=".onSelectOrder"
+                  items="{
+                    path: '/PurchaseOrders',
+                    parameters: {
+                      $expand: 'supplier',
+                      $orderby: 'orderNumber desc'
+                    }
+                  }"
+                  noDataText="No hay órdenes de compra registradas."
+                  class="sapUiMediumMarginBottom"
+                >
+                  <headerToolbar>
+                    <OverflowToolbar>
+                      <Title text="Órdenes de Compra (Selecciona una para ver el detalle)" level="H3" />
+                      <ToolbarSpacer />
+                      <Button text="Nueva Orden" icon="sap-icon://add" type="Emphasized" press=".onOpenNewOrderDialog" />
+                    </OverflowToolbar>
+                  </headerToolbar>
+                  <columns>
+                    <Column><Text text="N° Orden" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Proveedor" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Fecha Orden" /></Column>
+                    <Column hAlign="End"><Text text="Total" /></Column>
+                    <Column hAlign="Center"><Text text="Estado" /></Column>
+                  </columns>
+                  <items>
+                    <ColumnListItem type="Active">
+                      <cells>
+                        <ObjectIdentifier title="{orderNumber}" text="{notes}" />
+                        <Text text="{supplier/name}" />
+                        <Text text="{orderDate}" />
+                        <ObjectNumber number="{totalAmount}" unit="{currencyCode}" />
+                        <ObjectStatus
+                          text="{path: 'status', formatter: '.formatOrderStatusText'}"
+                          state="{path: 'status', formatter: '.formatOrderStatusState'}"
+                        />
+                      </cells>
+                    </ColumnListItem>
+                  </items>
+                </Table>
+
+                <Panel
+                  id="orderDetailPanel"
+                  visible="{ui>/hasSelectedOrder}"
+                  headerText="Detalle de Orden de Compra"
+                  expandable="false"
+                >
+                  <ObjectHeader
+                    title="{orderNumber}"
+                    number="{totalAmount}"
+                    numberUnit="{currencyCode}"
+                    intro="{supplier/name}"
+                  >
+                    <statuses>
+                      <ObjectStatus
+                        text="{path: 'status', formatter: '.formatOrderStatusText'}"
+                        state="{path: 'status', formatter: '.formatOrderStatusState'}"
+                      />
+                    </statuses>
+                    <attributes>
+                      <ObjectAttribute title="Fecha de Orden" text="{orderDate}" />
+                      <ObjectAttribute title="Fecha Esperada" text="{expectedDate}" />
+                      <ObjectAttribute title="Observaciones" text="{notes}" />
+                    </attributes>
+                  </ObjectHeader>
+
+                  <OverflowToolbar class="sapUiTinyMarginBottom">
+                    <Title text="Ítems de la Orden" level="H4" />
+                    <ToolbarSpacer />
+                    <Button
+                      text="Agregar Ítem"
+                      icon="sap-icon://add"
+                      visible="{= ${status} === 'DRAFT' }"
+                      press=".onOpenAddItemDialog"
+                    />
+                    <Button
+                      text="Enviar a Aprobación"
+                      icon="sap-icon://paper-plane"
+                      visible="{= ${status} === 'DRAFT' }"
+                      press=".onSubmitOrder"
+                    />
+                    <Button
+                      text="Aprobar Orden"
+                      icon="sap-icon://accept"
+                      type="Emphasized"
+                      visible="{= ${status} === 'DRAFT' || ${status} === 'PENDING' }"
+                      press=".onApproveOrder"
+                    />
+                    <Button
+                      text="Recibir Mercancía (+Stock)"
+                      icon="sap-icon://shipping-status"
+                      type="Accept"
+                      visible="{= ${status} === 'APPROVED' }"
+                      press=".onReceiveGoods"
+                    />
+                    <Button
+                      text="Cancelar Orden"
+                      icon="sap-icon://decline"
+                      type="Reject"
+                      visible="{= ${status} === 'DRAFT' || ${status} === 'PENDING' }"
+                      press=".onCancelOrder"
+                    />
+                  </OverflowToolbar>
+
+                  <Table
+                    id="orderItemsTable"
+                    items="{
+                      path: 'items',
+                      parameters: {
+                        $expand: 'material'
+                      }
+                    }"
+                    noDataText="Esta orden aún no tiene ítems."
+                  >
+                    <columns>
+                      <Column><Text text="Material" /></Column>
+                      <Column hAlign="End"><Text text="Cantidad" /></Column>
+                      <Column hAlign="End"><Text text="Precio Unit." /></Column>
+                      <Column hAlign="End"><Text text="Subtotal" /></Column>
+                    </columns>
+                    <items>
+                      <ColumnListItem>
+                        <cells>
+                          <ObjectIdentifier title="{material/name}" text="{material/sku}" />
+                          <ObjectNumber number="{quantity}" unit="{material/unitOfMeasure}" />
+                          <ObjectNumber number="{unitPrice}" unit="USD" />
+                          <ObjectNumber number="{lineTotal}" unit="USD" />
+                        </cells>
+                      </ColumnListItem>
+                    </items>
+                  </Table>
+                </Panel>
+              </VBox>
+            </IconTabFilter>
+          </items>
+        </IconTabBar>
+      </content>
+    </Page>
+  </App>
+</mvc:View>
